@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Icons</title>
+</head>
+<body>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+    <canvas id="canvas128" width="128" height="128"></canvas>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#3B82F6');
+            gradient.addColorStop(1, '#8B5CF6');
+            
+            // Draw rounded rectangle background
+            ctx.fillStyle = gradient;
+            ctx.roundRect(0, 0, size, size, size * 0.15);
+            ctx.fill();
+            
+            // Draw animation lines
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size * 0.05;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            const padding = size * 0.2;
+            const lineSpacing = (size - padding * 2) / 4;
+            
+            // Top wave
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const x = padding + i * lineSpacing;
+                const y = padding + Math.sin(i * 0.8) * lineSpacing * 0.3;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            
+            // Bottom wave
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const x = padding + i * lineSpacing;
+                const y = size - padding + Math.sin(i * 0.8 + Math.PI) * lineSpacing * 0.3;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+        
+        // Create all icons
+        createIcon('canvas16', 16);
+        createIcon('canvas48', 48);
+        createIcon('canvas128', 128);
+        
+        // Download functions
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Add download buttons
+        setTimeout(() => {
+            const body = document.body;
+            body.innerHTML += '<br><button onclick="downloadIcon(\'canvas16\', \'icon16.png\')">Download 16x16</button>';
+            body.innerHTML += '<button onclick="downloadIcon(\'canvas48\', \'icon48.png\')">Download 48x48</button>';
+            body.innerHTML += '<button onclick="downloadIcon(\'canvas128\', \'icon128.png\')">Download 128x128</button>';
+        }, 100);
+    </script>
+</body>
+</html>

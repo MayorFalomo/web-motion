@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Builder - Debug</title>
+  <style>
+    body {
+      width: 400px;
+      min-height: 600px;
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+    .debug-info {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Animation Builder - Debug Mode</h1>
+  
+  <div class="debug-info">
+    <h3>Extension Status</h3>
+    <p id="extension-status">Checking...</p>
+    <p id="chrome-api-status">Checking Chrome APIs...</p>
+  </div>
+  
+  <div class="debug-info">
+    <h3>Test Functions</h3>
+    <button onclick="testChromeAPI()">Test Chrome API</button>
+    <button onclick="testElementSelection()">Test Element Selection</button>
+    <button onclick="testPageElements()">Test Page Elements</button>
+  </div>
+  
+  <div class="debug-info">
+    <h3>Console Output</h3>
+    <div id="console-output" style="background: #000; color: #0f0; padding: 10px; font-family: monospace; height: 200px; overflow-y: auto;"></div>
+  </div>
+
+  <script>
+    function log(message) {
+      console.log(message);
+      const output = document.getElementById('console-output');
+      output.innerHTML += message + '\n';
+      output.scrollTop = output.scrollHeight;
+    }
+    
+    function updateStatus(elementId, message, isError = false) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.className = isError ? 'error' : 'success';
+    }
+    
+    // Test Chrome API availability
+    function testChromeAPI() {
+      log('Testing Chrome API...');
+      
+      if (typeof chrome === 'undefined') {
+        updateStatus('chrome-api-status', 'Chrome API not available', true);
+        log('ERROR: Chrome API not available');
+        return;
+      }
+      
+      if (!chrome.runtime) {
+        updateStatus('chrome-api-status', 'Chrome runtime not available', true);
+        log('ERROR: Chrome runtime not available');
+        return;
+      }
+      
+      if (!chrome.tabs) {
+        updateStatus('chrome-api-status', 'Chrome tabs API not available', true);
+        log('ERROR: Chrome tabs API not available');
+        return;
+      }
+      
+      updateStatus('chrome-api-status', 'Chrome API available', false);
+      log('SUCCESS: Chrome API is available');
+      
+      // Test getting current tab
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (chrome.runtime.lastError) {
+          log('ERROR getting current tab: ' + chrome.runtime.lastError.message);
+        } else {
+          log('SUCCESS: Current tab ID: ' + tabs[0].id);
+        }
+      });
+    }
+    
+    // Test element selection
+    function testElementSelection() {
+      log('Testing element selection...');
+      
+      if (typeof chrome === 'undefined' || !chrome.runtime) {
+        log('ERROR: Chrome API not available for element selection test');
+        return;
+      }
+      
+      chrome.runtime.sendMessage({action: 'startElementSelection'}, (response) => {
+        if (chrome.runtime.lastError) {
+          log('ERROR starting element selection: ' + chrome.runtime.lastError.message);
+        } else {
+          log('SUCCESS: Element selection started');
+        }
+      });
+    }
+    
+    // Test getting page elements
+    function testPageElements() {
+      log('Testing page elements...');
+      
+      if (typeof chrome === 'undefined' || !chrome.runtime) {
+        log('ERROR: Chrome API not available for page elements test');
+        return;
+      }
+      
+      chrome.runtime.sendMessage({action: 'getPageElements'}, (response) => {
+        if (chrome.runtime.lastError) {
+          log('ERROR getting page elements: ' + chrome.runtime.lastError.message);
+        } else {
+          log('SUCCESS: Found ' + (response?.elements?.length || 0) + ' elements');
+          if (response?.elements) {
+            response.elements.slice(0, 5).forEach((el, i) => {
+              log(`  ${i + 1}. ${el.tagName} - ${el.textContent?.substring(0, 30)}...`);
+            });
+          }
+        }
+      });
+    }
+    
+    // Initialize
+    window.addEventListener('load', () => {
+      log('Debug page loaded');
+      updateStatus('extension-status', 'Extension loaded', false);
+      testChromeAPI();
+    });
+    
+    // Listen for messages from background script
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        log('Received message: ' + JSON.stringify(request));
+        if (request.action === 'elementSelected') {
+          log('Element selected: ' + JSON.stringify(request.element));
+        }
+      });
+    }
+  </script>
+</body>
+</html>

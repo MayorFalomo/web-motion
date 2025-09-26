@@ -1,0 +1,132 @@
+/* Animation Builder Content Script Styles */
+
+.animation-builder-highlight {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  cursor: crosshair !important;
+}
+
+.animation-builder-selected {
+  outline: 3px solid #10b981 !important;
+  outline-offset: 2px !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.animation-builder-animating {
+  transition: all 0.3s ease !important;
+}
+
+/* Overlay for element selection */
+#animation-builder-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  z-index: 999999;
+  border: 2px solid #3b82f6;
+  border-radius: 4px;
+}
+
+/* Animation preview styles */
+.animation-builder-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animation-builder-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.animation-builder-slide-down {
+  animation: slideDown 0.8s ease-out forwards;
+}
+
+.animation-builder-slide-left {
+  animation: slideLeft 0.8s ease-out forwards;
+}
+
+.animation-builder-slide-right {
+  animation: slideRight 0.8s ease-out forwards;
+}
+
+.animation-builder-scale-in {
+  animation: scaleIn 0.8s ease-out forwards;
+}
+
+.animation-builder-rotate-in {
+  animation: rotateIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideLeft {
+  from { 
+    opacity: 0; 
+    transform: translateX(50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes slideRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(-50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes rotateIn {
+  from { 
+    opacity: 0; 
+    transform: rotate(-180deg); 
+  }
+  to { 
+    opacity: 1; 
+    transform: rotate(0deg); 
+  }
+}

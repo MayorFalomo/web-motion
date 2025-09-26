@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Builder</title>
+  <style>
+    body {
+      width: 400px;
+      min-height: 600px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    #root {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Prevent text selection during element selection mode */
+    .selecting-mode {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="popup.js"></script>
+  <link rel="stylesheet" href="popup.css">
+  <script>
+    // Prevent popup from closing when clicking outside during element selection
+    let isSelecting = false;
+    
+    // Listen for messages from the React app about selection state
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'SELECTION_STATE_CHANGED') {
+        isSelecting = event.data.isSelecting;
+      }
+    });
+    
+    // Prevent blur events from closing the popup during selection
+    window.addEventListener('blur', (event) => {
+      if (isSelecting) {
+        event.preventDefault();
+        // Keep focus on the popup
+        window.focus();
+      }
+    });
+    
+    // Prevent the popup from losing focus during element selection
+    document.addEventListener('visibilitychange', () => {
+      if (isSelecting && document.hidden) {
+        // Try to keep the popup visible
+        window.focus();
+      }
+    });
+  </script>
+</body>
+</html>
