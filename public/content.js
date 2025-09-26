@@ -112,30 +112,40 @@ function generateElementId(element) {
   return `${tagName}${className}-${textContent}-${Date.now()}`;
 }
 
+function getSafeSelector(element) {
+  if (!(element instanceof Element)) return null;
+
+  let selector = element.tagName.toLowerCase();
+
+  // Add classes, escaping special characters
+  if (element.classList.length > 0) {
+    const escapedClasses = Array.from(element.classList)
+      .map(cls =>
+        cls
+          .replace(/:/g, '\\:')   // escape colons (Tailwind variants)
+          .replace(/\[/g, '\\[')  // escape [
+          .replace(/\]/g, '\\]')  // escape ]
+          .replace(/#/g, '\\#')   // escape # inside []
+      )
+      .join('.');
+    selector += '.' + escapedClasses;
+  }
+
+  // Add nth-child to make it unique if necessary
+  if (element.parentNode) {
+    const siblings = Array.from(element.parentNode.children)
+      .filter(sib => sib.tagName === element.tagName);
+    if (siblings.length > 1) {
+      const index = siblings.indexOf(element);
+      selector += `:nth-of-type(${index + 1})`;
+    }
+  }
+
+  return selector;
+}
+
 function generateSelector(element) {
   // Generate a CSS selector for the element
   if (element.id) return `#${element.id}`;
-  
-  let selector = element.tagName.toLowerCase();
-  
-  if (element.className) {
-    const classes = element.className.split(' ').filter(c => c.trim());
-    if (classes.length > 0) {
-      selector += '.' + classes.join('.');
-    }
-  }
-  
-  // Add nth-of-type if needed for uniqueness
-  const parent = element.parentElement;
-  if (parent) {
-    const siblings = Array.from(parent.children).filter(child => 
-      child.tagName === element.tagName && child.className === element.className
-    );
-    if (siblings.length > 1) {
-      const index = siblings.indexOf(element) + 1;
-      selector += `:nth-of-type(${index})`;
-    }
-  }
-  
-  return selector;
+  return getSafeSelector(element);
 }

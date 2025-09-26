@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+public/injected.js
+public/content.js
+yarn.lock
+*.yarn.lock
 
 # Editor directories and files
 .vscode/*

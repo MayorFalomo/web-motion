@@ -136,35 +136,50 @@
     return `${tagName}${className}-${textContent}-${Date.now()}`;
   }
   
-  function generateSelector(element) {
-    if (element.id) return `#${element.id}`;
-    
+  function getSafeSelector(element) {
+    if (!(element instanceof Element)) return null;
+
     let selector = element.tagName.toLowerCase();
-    
-    if (element.className) {
-      const classes = element.className.split(' ').filter(c => c.trim());
-      if (classes.length > 0) {
-        selector += '.' + classes.join('.');
-      }
+
+    // Add classes, escaping special characters
+    if (element.classList.length > 0) {
+      const escapedClasses = Array.from(element.classList)
+        .map(cls =>
+          cls
+            .replace(/:/g, '\\:')   // escape colons (Tailwind variants)
+            .replace(/\[/g, '\\[')  // escape [
+            .replace(/\]/g, '\\]')  // escape ]
+            .replace(/#/g, '\\#')   // escape # inside []
+        )
+        .join('.');
+      selector += '.' + escapedClasses;
     }
-    
-    // Add nth-of-type if needed for uniqueness
-    const parent = element.parentElement;
-    if (parent) {
-      const siblings = Array.from(parent.children).filter(child => 
-        child.tagName === element.tagName && child.className === element.className
-      );
+
+    // Add nth-child to make it unique if necessary
+    if (element.parentNode) {
+      const siblings = Array.from(element.parentNode.children)
+        .filter(sib => sib.tagName === element.tagName);
       if (siblings.length > 1) {
-        const index = siblings.indexOf(element) + 1;
-        selector += `:nth-of-type(${index})`;
+        const index = siblings.indexOf(element);
+        selector += `:nth-of-type(${index + 1})`;
       }
     }
-    
+
     return selector;
   }
+
+  function generateSelector(element) {
+    if (element.id) return `#${element.id}`;
+    return getSafeSelector(element);
+  }
   
-  function animateElement(elementId, animation) {
-    const element = document.querySelector(elementId);
+  function escapeSelector(selector) {
+    return selector.replace(/([:.[\]#])/g, '\\$1');
+  }
+
+ function animateElement(elementId, animation) {
+    const safeSelector = escapeSelector(elementId);
+    const element = document.querySelector(safeSelector);
     if (!element) {
       console.warn(`Element not found with selector: ${elementId}`);
       return;
@@ -224,7 +239,8 @@
   }
   
   function resetElement(elementId) {
-    const element = document.querySelector(elementId);
+    const safeSelector = escapeSelector(elementId);
+    const element = document.querySelector(safeSelector);
     if (!element) {
       console.warn(`Element not found with selector: ${elementId}`);
       return;
